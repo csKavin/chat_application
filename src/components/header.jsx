@@ -17,8 +17,8 @@ const useStyles = makeStyles({
     },
     Beginbutton1: {
         marginTop: '24px',
-        backgroundColor: 'black !important',
-        color: 'white !important',
+        // backgroundColor: 'black !important',
+        // color: 'white !important',
         textTransform: 'capitalize !important'
     },
     fixHeight: {
@@ -30,7 +30,8 @@ const useStyles = makeStyles({
 function Header() {
     const [data, setData] = useState([])
     const [send, setSend] = useState(0)
-    const [sendMessage, setSendMessage] = useState('')
+    const [sendMessage, setSendMessage] = useState('');
+    const [disabledSend, setDisableSend] = useState(false)
 
     const handleChange = (e) => {
         // console.log(e.target.value);
@@ -40,18 +41,27 @@ function Header() {
     const projectId = "2b8b731d-add1-4a1d-82f6-4d33842a509a"      //very sensitive need to store in backend
 
     // post user need to do after login in backend Api
-    const userData = {
-        username: 'kavin1',
-        first_name: 'kavin1',
-        last_name: 'cs',
-        secret: 'pass123'
-    };
 
-    const headers = {
-        'PRIVATE-KEY': private_key
-    };
+
+
+
+    //credentials this will come from Api 
+
+    const credentials = {
+        UserName: "bhava",
+        password: "pass123"
+    }
 
     // post a new user 
+    const userData = {
+        username: 'bhava',
+        first_name: 'bhava',
+        last_name: 'T',
+        secret: 'pass123'
+    };
+    const headers = {
+        'PRIVATE-KEY': private_key  //project private very much sensitive
+    };
     const postUser = () => {
         axios.post('https://api.chatengine.io/users/', userData, { headers })
             .then(response => {
@@ -75,11 +85,13 @@ function Header() {
 
     // create Chat
     const createChat = () => {
-        axios.put('https://api.chatengine.io/chats/', { "usernames": ["kavin", "kavin1"], "title": "kavin", "is_direct_chat": true },
-            { headers: { "Project-ID": projectId, "User-Name": 'kavin', "User-Secret": "pass123" } }    //header's are very sensitive need to store in backendApi  
+        axios.put('https://api.chatengine.io/chats/', { "usernames": [credentials.UserName, "bhava"], "title": "kavin", "is_direct_chat": true },
+            { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }    //header's are very sensitive need to store in backendApi  
         )
             .then(response => {
-                console.log('User created:', response.data);
+                console.log('chat created:', response.data);  //chat Id need to send with Api
+
+                //send post Api with ChatId and Name
             })
             .catch(error => {
                 console.error('Error creating user:', error);
@@ -88,13 +100,15 @@ function Header() {
 
     //send message to chat
     const sendChat = () => {
-        axios.post('https://api.chatengine.io/chats/199632/messages/', { "text": sendMessage },
-            { headers: { "Project-ID": projectId, "User-Name": 'kavin1', "User-Secret": "pass123" } }
+        setDisableSend(true)
+        axios.post('https://api.chatengine.io/chats/199870/messages/', { "text": sendMessage },
+            { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
             .then(response => {
                 console.log('User created:', response.data);
                 setSend(send + 1);
-                setSendMessage('')
+                setSendMessage('');
+                setDisableSend(false)
 
             })
             .catch(error => {
@@ -105,8 +119,8 @@ function Header() {
     //get a messgae to chat 
     useEffect(() => {
         // const getChat = () => {
-        axios.get('https://api.chatengine.io/chats/199632/messages/',
-            { headers: { "Project-ID": projectId, "User-Name": 'kavin', "User-Secret": "pass123" } }
+        axios.get('https://api.chatengine.io/chats/199870/messages/',
+            { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
             .then(response => {
                 // console.log('User created:', response.data);
@@ -116,7 +130,7 @@ function Header() {
                 console.error('Error creating user:', error);
             });
         // }
-    }, [])
+    })
 
 
     // console.log(data, "data");
@@ -130,7 +144,7 @@ function Header() {
             <Button className={classes.Beginbutton} onClick={getUser}>get user</Button> <br />
 
             {/* Accepting the request  */}
-            <Button className={classes.Beginbutton} onClick={createChat}>create a chat</Button> <br />
+            <Button className={classes.Beginbutton} onClick={createChat}>create a chat</Button> please don't click this button <br />
 
             {/* chat send message  */}
 
@@ -140,15 +154,15 @@ function Header() {
             <div className='container-fluid mt-4'>
                 <Grid container spacing={2}>
                     <Grid item md={3}>
-                       <div className='card p-4'>
-                         <div>
-                            multiple requests
-                         </div>
-                         <hr/>
-                         <div>
-                            Directed chats
-                         </div>
-                       </div>
+                        <div className='card p-4'>
+                            <div>
+                                multiple requests
+                            </div>
+                            <hr />
+                            <div>
+                                Directed chats
+                            </div>
+                        </div>
                     </Grid>
                     <Grid item md={9}>
                         <div className='card p-4'>
@@ -170,10 +184,10 @@ function Header() {
                             <br />
                             <div class="form-group">
                                 <label for="exampleFormControlTextarea1" className='fw-bold'>COMPOSE MESSAGE</label>
-                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" onChange={(e) => handleChange(e)}></textarea>
+                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" value={sendMessage} onChange={(e) => handleChange(e)}></textarea>
                             </div>
                             <div className="d-flex flex-column align-items-end mt-3">
-                                <Button variant='contained' className={classes.Beginbutton1} onClick={sendChat}> send chat</Button>
+                                <Button disabled={disabledSend} variant='contained' className={classes.Beginbutton1} onClick={sendChat}> send chat</Button>
                             </div>
 
                         </div>
