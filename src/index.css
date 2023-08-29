@@ -16,3 +16,6 @@ body {
   margin-left: 4rem;
   margin-top: 4rem;
 }
+.pointer {
+  cursor: pointer;
+}

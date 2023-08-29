@@ -2,8 +2,8 @@ import React from 'react'
 
 function Index(props) {
   let { details, credentials, sendDataToParent } = props;
+  console.log(details,"deraadas");
   const [childData, setChildData] = React.useState('');
-  console.log(props, "props");
   const invidualChat = details?.people;
   const temp_name = invidualChat.filter((item) => {
     return item?.person?.username !== credentials.UserName;
@@ -14,8 +14,16 @@ function Index(props) {
   }
   return (
     <>
-      <div className='fw-bold' onClick={() => ChatId(details)}>{temp_name[0]?.person?.username}</div>
-      <hr />
+      <div className='mt-2'>
+        <div className=' card p-2 text-center pointer' onClick={() => ChatId(details)}>
+          <div className='fw-bold'>{temp_name[0]?.person?.username}</div>
+          {
+            details?.last_message?.text ?
+              <div>recent : {details?.last_message?.text}</div> : null
+          }
+          {details?.last_message?.sender?.is_online ? <>online</> : <>offline</>}
+        </div>
+      </div>
     </>
   )
 }
