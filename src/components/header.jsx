@@ -48,7 +48,7 @@ function Header() {
     //credentials this will come from Api 
 
     const credentials = {
-        UserName: "bhava",
+        UserName: "kavin",
         password: "pass123"
     }
 
@@ -101,7 +101,7 @@ function Header() {
     //send message to chat
     const sendChat = () => {
         setDisableSend(true)
-        axios.post('https://api.chatengine.io/chats/199870/messages/', { "text": sendMessage },
+        axios.post('https://api.chatengine.io/chats/199874/messages/', { "text": sendMessage },
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
             .then(response => {
@@ -119,7 +119,7 @@ function Header() {
     //get a messgae to chat 
     useEffect(() => {
         // const getChat = () => {
-        axios.get('https://api.chatengine.io/chats/199870/messages/',
+        axios.get('https://api.chatengine.io/chats/199874/messages/',
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
             .then(response => {
@@ -169,7 +169,7 @@ function Header() {
                             <div className={classes.fixHeight}>
                                 {data.map((item, index) => {
                                     return <div className='d-flex justify-content between' key={index}>
-                                        {item?.sender_username === "kavin1" ?
+                                        {item?.sender_username === "kavin" ?
                                             <div className='mt-4'>
                                                 <p>{item.created}</p>
                                                 <p className='fw-bold'>{item.text}</p >
