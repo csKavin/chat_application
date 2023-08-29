@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useState, useEffect } from 'react';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid'
-import { Button, Box } from '@mui/material'
+import { Button, Box, Divider } from '@mui/material'
 import logo from '../Assests/Imp/FinalLogo.png';
 import axios from 'axios';
 
@@ -89,7 +89,7 @@ function Header() {
     //send message to chat
     const sendChat = () => {
         axios.post('https://api.chatengine.io/chats/199632/messages/', { "text": sendMessage },
-            { headers: { "Project-ID": projectId, "User-Name": 'kavin1', "User-Secret": "pass123" } }
+            { headers: { "Project-ID": projectId, "User-Name": 'kavin', "User-Secret": "pass123" } }
         )
             .then(response => {
                 console.log('User created:', response.data);
@@ -109,14 +109,14 @@ function Header() {
             { headers: { "Project-ID": projectId, "User-Name": 'kavin', "User-Secret": "pass123" } }
         )
             .then(response => {
-                console.log('User created:', response.data);
+                // console.log('User created:', response.data);
                 setData(response?.data);
             })
             .catch(error => {
                 console.error('Error creating user:', error);
             });
         // }
-    })
+    }, [])
 
 
     // console.log(data, "data");
@@ -137,34 +137,49 @@ function Header() {
 
             {/* <Button className={classes.Beginbutton} onClick={getChat}> get chat</Button> <br /> */}
 
-            <div className='container-fluid'>
-
-                <div className='card p-4'>
-                    <div className={classes.fixHeight}>
-                        {data.map((item, index) => {
-                            return <div className='d-flex justify-content between' key={index}>
-                                {item?.sender_username === "kavin1" ?
-                                    <div className='mt-4'>
-                                        <p>{item.created}</p>
-                                        <p className='fw-bold'>{item.text}</p >
-                                    </div> 
-                                    : <div className='d-flex flex-column align-items-end w-100 mt-4' >
-                                        <p>{item.created}</p>
-                                        <p className='fw-bold'>{item.text}</p >
-                                    </div>}
+            <div className='container-fluid mt-4'>
+                <Grid container spacing={2}>
+                    <Grid item md={3}>
+                       <div className='card p-4'>
+                         <div>
+                            multiple requests
+                         </div>
+                         <hr/>
+                         <div>
+                            Directed chats
+                         </div>
+                       </div>
+                    </Grid>
+                    <Grid item md={9}>
+                        <div className='card p-4'>
+                            <div className={classes.fixHeight}>
+                                {data.map((item, index) => {
+                                    return <div className='d-flex justify-content between' key={index}>
+                                        {item?.sender_username === "kavin1" ?
+                                            <div className='mt-4'>
+                                                <p>{item.created}</p>
+                                                <p className='fw-bold'>{item.text}</p >
+                                            </div>
+                                            : <div className='d-flex flex-column align-items-end w-100 mt-4' >
+                                                <p>{item.created}</p>
+                                                <p className='fw-bold'>{item.text}</p >
+                                            </div>}
+                                    </div>
+                                })}
                             </div>
-                        })}
-                    </div>
-                    <br />
-                    <div class="form-group">
-                        <label for="exampleFormControlTextarea1" className='fw-bold'>COMPOSE MESSAGE</label>
-                        <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" onChange={(e) => handleChange(e)}></textarea>
-                    </div>
-                    <div className="d-flex flex-column align-items-end mt-3">
-                        <Button variant='contained' className={classes.Beginbutton1} onClick={sendChat}> send chat</Button>
-                    </div>
+                            <br />
+                            <div class="form-group">
+                                <label for="exampleFormControlTextarea1" className='fw-bold'>COMPOSE MESSAGE</label>
+                                <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" onChange={(e) => handleChange(e)}></textarea>
+                            </div>
+                            <div className="d-flex flex-column align-items-end mt-3">
+                                <Button variant='contained' className={classes.Beginbutton1} onClick={sendChat}> send chat</Button>
+                            </div>
 
-                </div>
+                        </div>
+                    </Grid>
+                </Grid>
+
 
 
             </div>
