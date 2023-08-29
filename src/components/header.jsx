@@ -89,7 +89,7 @@ function Header() {
     //send message to chat
     const sendChat = () => {
         axios.post('https://api.chatengine.io/chats/199632/messages/', { "text": sendMessage },
-            { headers: { "Project-ID": projectId, "User-Name": 'kavin', "User-Secret": "pass123" } }
+            { headers: { "Project-ID": projectId, "User-Name": 'kavin1', "User-Secret": "pass123" } }
         )
             .then(response => {
                 console.log('User created:', response.data);
