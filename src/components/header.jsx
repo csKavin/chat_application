@@ -5,6 +5,8 @@ import Grid from '@mui/material/Grid'
 import { Button, Box, Divider } from '@mui/material'
 import logo from '../Assests/Imp/FinalLogo.png';
 import axios from 'axios';
+import { People } from '@mui/icons-material';
+import Person from './person';
 
 const useStyles = makeStyles({
     container: {
@@ -31,7 +33,13 @@ function Header() {
     const [data, setData] = useState([])
     const [send, setSend] = useState(0)
     const [sendMessage, setSendMessage] = useState('');
-    const [disabledSend, setDisableSend] = useState(false)
+    const [chatPerson, setChatPerson] = useState([]);
+    const [disabledSend, setDisableSend] = useState(false);
+    const [childData, setChildData] = useState('');
+
+    const handleChildData = (data) => {
+        setChildData(data);
+    };
 
     const handleChange = (e) => {
         // console.log(e.target.value);
@@ -54,9 +62,9 @@ function Header() {
 
     // post a new user 
     const userData = {
-        username: 'bhava',
+        username: 'vishnu',
         first_name: 'bhava',
-        last_name: 'T',
+        // last_name: 'T',
         secret: 'pass123'
     };
     const headers = {
@@ -85,7 +93,7 @@ function Header() {
 
     // create Chat
     const createChat = () => {
-        axios.put('https://api.chatengine.io/chats/', { "usernames": [credentials.UserName, "bhava"], "title": "kavin", "is_direct_chat": true },
+        axios.put('https://api.chatengine.io/chats/', { "usernames": [credentials.UserName, "vishnu"], "title": "kavin&varun", "is_direct_chat": true },
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }    //header's are very sensitive need to store in backendApi  
         )
             .then(response => {
@@ -97,11 +105,23 @@ function Header() {
                 console.error('Error creating user:', error);
             });
     }
+    const getChat = () => {
+        axios.get('https://api.chatengine.io/chats/',
+            { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }    //header's are very sensitive need to store in backendApi  
+        )
+            .then(response => {
+                console.log('get chat :', response.data);
+                setChatPerson(response.data);
+            })
+            .catch(error => {
+                console.error('Error creating user:', error);
+            });
+    }
 
     //send message to chat
     const sendChat = () => {
         setDisableSend(true)
-        axios.post('https://api.chatengine.io/chats/199874/messages/', { "text": sendMessage },
+        axios.post(`https://api.chatengine.io/chats/${childData}/messages/`, { "text": sendMessage },
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
             .then(response => {
@@ -119,11 +139,12 @@ function Header() {
     //get a messgae to chat 
     useEffect(() => {
         // const getChat = () => {
-        axios.get('https://api.chatengine.io/chats/199874/messages/',
+        console.log("oiiii");
+        axios.get(`https://api.chatengine.io/chats/${childData}/messages/`,
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
             .then(response => {
-                // console.log('User created:', response.data);
+                console.log('User created:', response.data);
                 setData(response?.data);
             })
             .catch(error => {
@@ -131,9 +152,11 @@ function Header() {
             });
         // }
     })
+    useEffect(() => {
+        setChatPerson(chatPerson)
+        console.log(chatPerson, "chatperson");
 
-
-    // console.log(data, "data");
+    }, [])
 
     const classes = useStyles();
     return (
@@ -147,7 +170,7 @@ function Header() {
             <Button className={classes.Beginbutton} onClick={createChat}>create a chat</Button> please don't click this button <br />
 
             {/* chat send message  */}
-
+            <Button className={classes.Beginbutton} onClick={getChat}>get a chat</Button>  <br />
 
             {/* <Button className={classes.Beginbutton} onClick={getChat}> get chat</Button> <br /> */}
 
@@ -160,7 +183,9 @@ function Header() {
                             </div>
                             <hr />
                             <div>
-                                Directed chats
+                                {chatPerson.map((item, index) => (
+                                    <Person key={index} details={item} credentials={credentials} sendDataToParent={handleChildData} />
+                                ))}
                             </div>
                         </div>
                     </Grid>
@@ -169,15 +194,16 @@ function Header() {
                             <div className={classes.fixHeight}>
                                 {data.map((item, index) => {
                                     return <div className='d-flex justify-content between' key={index}>
-                                        {item?.sender_username === "kavin" ?
+                                        {item?.sender_username === credentials.UserName ?
+                                            <div className='d-flex flex-column align-items-end w-100 mt-4' >
+                                                <p>{item.created}</p>
+                                                <p className='fw-bold'>{item.text}</p >
+                                            </div> :
                                             <div className='mt-4'>
                                                 <p>{item.created}</p>
                                                 <p className='fw-bold'>{item.text}</p >
                                             </div>
-                                            : <div className='d-flex flex-column align-items-end w-100 mt-4' >
-                                                <p>{item.created}</p>
-                                                <p className='fw-bold'>{item.text}</p >
-                                            </div>}
+                                        }
                                     </div>
                                 })}
                             </div>
