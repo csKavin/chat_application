@@ -2,7 +2,6 @@ import React from 'react'
 
 function Index(props) {
   let { details, credentials, sendDataToParent } = props;
-  console.log(details,"deraadas");
   const [childData, setChildData] = React.useState('');
   const invidualChat = details?.people;
   const temp_name = invidualChat.filter((item) => {

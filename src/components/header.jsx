@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { makeStyles } from '@mui/styles';
 import Grid from '@mui/material/Grid'
 import { Button, Box, Divider, CircularProgress } from '@mui/material'
@@ -7,6 +7,8 @@ import logo from '../Assests/Imp/FinalLogo.png';
 import axios from 'axios';
 import { People } from '@mui/icons-material';
 import Person from './person';
+import EditIcon from '@mui/icons-material/Edit';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const useStyles = makeStyles({
     container: {
@@ -30,14 +32,18 @@ const useStyles = makeStyles({
 });
 
 function Header() {
-    const [data, setData] = useState([])
+    const [data, setData] = useState()
     const [send, setSend] = useState(0)
     const [sendMessage, setSendMessage] = useState('');
     const [chatPerson, setChatPerson] = useState([]);
     const [disabledSend, setDisableSend] = useState(false);
     const [childData, setChildData] = useState();
     const [apiReload, setApiReload] = useState(false)
-    const [creatingChat, setCreatingChat] = useState("")
+    const [update, setUpdate] = useState(false);
+    const [messageId, setMessageId] = useState('')
+    const messagesEndRef = useRef(null);
+
+
 
     const handleChildData = (data) => {
         setChildData(data);
@@ -53,7 +59,7 @@ function Header() {
     //credentials this will come from Api 
 
     const credentials = {
-        UserName: "kavin",
+        UserName: "bhava",
         password: "pass123"
     }
 
@@ -94,13 +100,13 @@ function Header() {
 
     // create Chat
     const createChat = (user) => {
-        axios.put('https://api.chatengine.io/chats/', { "usernames": [credentials.UserName, user], "title": "kavin&varun", "is_direct_chat": true },
+        axios.put('https://api.chatengine.io/chats/', { "usernames": [credentials.UserName, user], "title": "conversation", "is_direct_chat": true },
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }    //header's are very sensitive need to store in backendApi  
         )
             .then(response => {
-                console.log('chat created:', response.data);  //chat Id need to send with Api
-
-                //send post Api with ChatId and Name
+                console.log('chat created:', response.data);
+                alert("created now you can chat with requested user")
+                //here chat id will created
             })
             .catch(error => {
                 console.error('Error creating user:', error);
@@ -139,23 +145,87 @@ function Header() {
             });
     }
 
-    //get a messgae to chat 
-    useEffect(() => {
-        axios.get(`https://api.chatengine.io/chats/${childData}/messages/`,
+    const editMessage = (messageDetails) => {
+        const message_id = messageDetails?.id;
+        axios.get(`https://api.chatengine.io/chats/${childData}/messages/${message_id}/`,
             { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
         )
-            .then(response => {
-                console.log('get msg:', response.data);
-                setData(response?.data);
+            .then((res) => {
+                setSendMessage(res.data.text);
+                setMessageId(message_id)
+                setUpdate(true)
             })
-            .catch(error => {
-                console.error('Error creating user:', error);
-            });
+            .catch((err) => {
+                console.log(err);
+            })
+    }
+    const updation = () => {
+        if (sendMessage) {
+            axios.patch(`https://api.chatengine.io/chats/${childData}/messages/${messageId}/`, { "text": sendMessage },
+                { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
+            )
+                .then((res) => {
+                    setSendMessage('')
+                    setUpdate(false)
+                })
+                .catch((err) => {
+                    console.log(err);
+                })
+
+        }
+    }
+
+    const deletemessage = (messageDetails) => {
+        const message_id = messageDetails?.id;
+        axios.get(`https://api.chatengine.io/chats/${childData}/messages/${message_id}/`,
+            { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
+        )
+            .then((res) => {
+                // setSendMessage(res.data.text);
+                alert("message deleted");
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+        axios.delete(`https://api.chatengine.io/chats/${childData}/messages/${message_id}/`,
+            { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
+        )
+            .then((res) => {
+                console.log(res, "working fine");
+            })
+            .catch((err) => {
+                console.log(err);
+            })
+    }
+
+    //get a messgae to chat 
+    useEffect(() => {
+        const interval = setInterval(() => {
+            axios.get(`https://api.chatengine.io/chats/${childData}/messages/`,
+                { headers: { "Project-ID": projectId, "User-Name": credentials.UserName, "User-Secret": credentials.password } }
+            )
+                .then(response => {
+                    console.log('get msg:', response.data);
+                    setData(response?.data);
+
+                })
+                .catch(error => {
+                    console.error('Error creating user:', error);
+                });
+        }, 1000); // Poll every 0.5 seconds
+        return () => clearInterval(interval);
     })
+
     useEffect(() => {
         setChatPerson(chatPerson)
         getChat();
     }, [])
+    const scrollToBottom = () => {
+        messagesEndRef?.current?.scrollIntoView({ behavior: 'smooth' });
+    };
+    useEffect(() => {
+        scrollToBottom();
+    }, [data]);
 
     const acceptRequest = (user) => {
         createChat(user);
@@ -202,24 +272,31 @@ function Header() {
                     </Grid>
                     <Grid item md={10}>
                         <div className='card p-4'>
-                            {data.length > 0 ?
+                            {data ?
                                 <div className={classes.fixHeight}>
                                     {data.map((item, index) => {
-                                        return <div className='d-flex justify-content between' key={index}>
-                                            {item?.sender_username === credentials.UserName ?
-                                                <div className='d-flex flex-column align-items-end w-100 mt-4' >
-                                                    <p>{item.created}</p>
-                                                    <p className='fw-bold'>{item.text}</p >
-                                                </div> :
-                                                <div className='mt-4'>
-                                                    <p>{item.created}</p>
-                                                    <p className='fw-bold'>{item.text}</p >
-                                                </div>
-                                            }
+                                        return <div className='d-flex justify-content between' key={index} >
+                                            <>
+                                                {item?.sender_username === credentials.UserName ?
+                                                    <div className='d-flex flex-column align-items-end w-100 mt-4' >
+                                                        <p>{item.created}</p>
+                                                        <p className='fw-bold pointer'>
+                                                            <DeleteIcon style={{ color: "red" }} onClick={() => deletemessage(item)} />
+                                                            &nbsp;<EditIcon style={{ color: "green" }} onClick={() => editMessage(item)} />&nbsp;
+                                                            {item.text}</p >
+                                                    </div> :
+                                                    <div className='mt-4'>
+                                                        <p>{item.created}</p>
+                                                        <p className='fw-bold '>{item.text}</p >
+                                                    </div>
+                                                }
+                                            </>
+
                                         </div>
                                     })}
+                                    <div ref={messagesEndRef} />
                                 </div>
-                                : <div className={classes.fixHeight}><>No conversation found</></div>}
+                                : <div className={classes.fixHeight}><>choose any chat....</></div>}
 
                             <br />
                             <div class="form-group">
@@ -227,7 +304,11 @@ function Header() {
                                 <textarea class="form-control" id="exampleFormControlTextarea1" rows="3" value={sendMessage} onChange={(e) => handleChange(e)}></textarea>
                             </div>
                             <div className="d-flex flex-column align-items-end mt-3">
-                                <Button disabled={disabledSend} variant='contained' className={classes.Beginbutton1} onClick={sendChat}> send chat</Button>
+                                {data &&
+                                    <> {update ? <Button variant='contained' className={classes.Beginbutton1} onClick={updation}>update chat</Button> :
+                                        <Button disabled={disabledSend} variant='contained' className={classes.Beginbutton1} onClick={sendChat}> send chat</Button>}
+                                    </>
+                                }
                             </div>
 
                         </div>
